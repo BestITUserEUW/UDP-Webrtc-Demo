@@ -36,3 +36,15 @@ To build **UDP-Webrtc-Demo** in Debug mode, follow these steps
 ```bash
 .\build\wrt_sender --endpoint "localhost" --port 8080
 ```
+
+## Third Party Packages
+
+| Library         | Repository URL                                                                 |
+|-----------------|---------------------------------------------------------------------------------|
+| LibDatachannel  | [https://github.com/paullouisageneau/libdatachannel](https://github.com/paullouisageneau/libdatachannel) |
+| enchantum       | [https://github.com/ZXShady/enchantum](https://github.com/Enchanted-Studios/enchantum) |
+| cpp-httplib     | [https://github.com/yhirose/cpp-httplib](https://github.com/yhirose/cpp-httplib) |
+| opencv          | [https://github.com/opencv/opencv](https://github.com/opencv/opencv)           |
+| ffmpeg          | [https://github.com/FFmpeg/FFmpeg](https://github.com/FFmpeg/FFmpeg)           |
+| openssl         | [https://github.com/openssl/openssl](https://github.com/openssl/openssl)
+---
