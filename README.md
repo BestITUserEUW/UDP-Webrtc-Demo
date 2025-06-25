@@ -10,7 +10,7 @@ Follow the steps below to build and run **UDP-Webrtc-Demo**.
 
 - **CMake** (version 3.16 or later recommended)
 - **C++ 23-compatible compiler**
-- **x264 and gtk installed**
+- **Optionally GTK3 if you want to display encoded / decoded image**
 
 ### Building the Project
 

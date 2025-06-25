@@ -3,6 +3,7 @@
 #include <memory>
 #include <thread>
 #include <mutex>
+#include <string>
 
 #include <rtc/rtc.hpp>
 #include <opencv2/core/utils/logger.hpp>
@@ -14,6 +15,7 @@
 #include "spsc_queue.hpp"
 #include "track_entry_exit.hpp"
 #include "signal_handler.hpp"
+#include "argparse.hpp"
 
 using namespace st;
 using std::println;
@@ -27,6 +29,8 @@ std::jthread http_worker;
 std::jthread decode_worker;
 folly::ProducerConsumerQueue<H264Image> queue{32};
 std::condition_variable has_data_cv;
+bool is_display_enabled = false;
+std::string window_name{"Receiver"};
 
 void HttpWorker(std::stop_token) {
     TrackEntryExit tee{};
@@ -62,8 +66,10 @@ void DecodeWorker(std::stop_token stoken) {
             continue;
         }
 
-        cv::imshow("Receiver", image);
-        cv::waitKey(1);
+        if (is_display_enabled) {
+            cv::imshow(window_name, image);
+            cv::waitKey(1);
+        }
     }
 }
 
@@ -137,16 +143,29 @@ void StartPeerConnection() {
     });
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     auto sig_handler = SignalHandler::Instance();
+    auto cli = argparse::CLI(argc, argv);
 
-    rtc::InitLogger(rtc::LogLevel::Info);
-    StartPeerConnection();
-    StartHttpServer();
+    if (cli.Contains("--display")) {
+        println("Display feature has been requested");
+        is_display_enabled = true;
+    }
 
     rtc::InitLogger(rtc::LogLevel::Info);
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_INFO);
-    cv::namedWindow("Receiver", cv::WINDOW_AUTOSIZE);
+
+    if (is_display_enabled) {
+        try {
+            cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
+        } catch (cv::Exception &exc) {
+            println("Display is not supported. Disabling feature");
+            is_display_enabled = false;
+        }
+    }
+
+    StartPeerConnection();
+    StartHttpServer();
     decode_worker = std::jthread(&DecodeWorker);
 
     sig_handler->Wait();
@@ -157,7 +176,5 @@ int main() {
     decode_worker.request_stop();
     http_worker.join();
     decode_worker.join();
-    cv::destroyAllWindows();
-
     return 0;
 }

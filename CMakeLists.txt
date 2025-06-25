@@ -53,6 +53,11 @@ target_compile_options(webrtc_crt PUBLIC
     -Wall -Wextra -Wuninitialized -Wno-unused-function -Wunused-variable -Wno-interference-size -ftemplate-depth=2048 -fconstexpr-depth=2048 $<$<CONFIG:Release>:-g0> $<$<CONFIG:Release>:-O3>
 )
 
+target_link_options(webrtc_crt PUBLIC
+    -static-libgcc -static-libstdc++ $<$<CONFIG:Release>:-s>
+)
+
+
 add_executable(wrt_receiver
     src/receiver.cpp
 )

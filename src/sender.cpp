@@ -1,6 +1,7 @@
 #include <print>
 #include <chrono>
 #include <memory>
+#include <string>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/utils/logger.hpp>
@@ -21,8 +22,8 @@ std::shared_ptr<rtc::PeerConnection> connection;
 std::shared_ptr<rtc::Track> track;
 std::shared_ptr<rtc::RtpPacketizationConfig> packet_config;
 std::jthread worker;
-
-#include <opencv2/opencv.hpp>
+bool is_display_enabled = false;
+std::string window_name{"Sender"};
 
 auto GenerateRGBFlowEffect(int frame_index, int width, int height) {
     cv::Mat yuv(height + height / 2, width, CV_8UC1);
@@ -81,8 +82,10 @@ void FrameSender(std::stop_token stoken) {
         auto image = GenerateRGBFlowEffect(counter, config.frame_width, config.frame_height);
         cv::putText(image, std::format("{}", counter), point, cv::FONT_HERSHEY_SIMPLEX, 0.5, text_color, 2);
 
-        cv::imshow("Sender", image);
-        cv::waitKey(1);
+        if (is_display_enabled) {
+            cv::imshow(window_name, image);
+            cv::waitKey(1);
+        }
 
         auto rc = encoder.Encode(image, encoded);
         if (rc == FFMpegEncoder::ErrorKind::kOk) {
@@ -117,15 +120,28 @@ int main(int argc, char* argv[]) {
         port = value;
     });
 
+    if (cli.Contains("--display")) {
+        println("Display feature has been requested");
+        is_display_enabled = true;
+    }
+
     rtc::InitLogger(rtc::LogLevel::Info);
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_INFO);
-    cv::namedWindow("Sender", cv::WINDOW_AUTOSIZE);
+
+    if (is_display_enabled) {
+        try {
+            cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
+        } catch (cv::Exception& exc) {
+            println("Display is not supported. Disabling feature");
+            is_display_enabled = false;
+        }
+    }
 
     httplib::Client client(endpoint, port);
     connection = std::make_shared<rtc::PeerConnection>();
 
     const rtc::SSRC ssrc = 42;
-    uint8_t payload_type = 100;
+    const uint8_t payload_type = 100;
 
     rtc::Description::Video media("video", rtc::Description::Direction::SendOnly);
     media.addH264Codec(payload_type);
