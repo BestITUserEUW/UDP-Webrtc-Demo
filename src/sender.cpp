@@ -2,20 +2,21 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/utils/logger.hpp>
 #include <rtc/rtc.hpp>
+#include <oryx/argparse.hpp>
+#include <oryx/enchantum.hpp>
+#include <oryx/httplib.hpp>
+#include <oryx/function_tracer.hpp>
+#include <oryx/chrono/frame_rate_controller.hpp>
 
 #include "ffmpeg_encoder.hpp"
 #include "signal_handler.hpp"
-#include "httplib.hpp"
-#include "argparse.hpp"
-#include "enchantum.hpp"
-#include "track_entry_exit.hpp"
-#include "fps_limiter.hpp"
 
-using namespace st;
+using namespace oryx;
 using std::println;
 
 std::shared_ptr<rtc::PeerConnection> connection;
@@ -58,7 +59,7 @@ auto GenerateRGBFlowEffect(int frame_index, int width, int height) {
 void FrameSender(std::stop_token stoken) {
     using namespace std::chrono;
 
-    TrackEntryExit tee{};
+    ORYX_TRACE_FUNCTION();
     FFMpegEncoder encoder;
     FFMpegEncoder::Config config;
     config.frame_width = 960;
@@ -72,9 +73,9 @@ void FrameSender(std::stop_token stoken) {
         return;
     }
 
-    H264Image encoded;
-    uint16_t counter{};
-    FpsLimiter limiter{config.frame_rate};
+    ByteVector encoded;
+    u64 counter{};
+    chrono::FrameRateController fr_controller{config.frame_rate};
 
     const cv::Scalar text_color(0, 0, 255);
     const cv::Point point(20, 20);
@@ -100,7 +101,7 @@ void FrameSender(std::stop_token stoken) {
         } else {
             println("Encoding failed with rc: {}", enchantum::to_string(rc));
         }
-        limiter.Sleep();
+        fr_controller.Sleep();
     }
 }
 

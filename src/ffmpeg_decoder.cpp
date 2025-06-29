@@ -14,11 +14,11 @@ extern "C" {
 
 using std::println;
 
-namespace st {
+namespace oryx {
 
 FFMpegDecoder::~FFMpegDecoder() { DeInit(); }
 
-auto FFMpegDecoder::Init() -> void_expected {
+auto FFMpegDecoder::Init() -> void_expected<Error> {
     auto codec = avcodec_find_decoder(AV_CODEC_ID_H264);
     if (!codec) {
         return UnexpectedError("h264 codec not found");
@@ -54,7 +54,7 @@ auto FFMpegDecoder::Init() -> void_expected {
         return UnexpectedError("h264 pkt alloc failed");
     }
 
-    return void_ok;
+    return kVoidExpected;
 }
 
 void FFMpegDecoder::DeInit() {
@@ -64,7 +64,7 @@ void FFMpegDecoder::DeInit() {
     codec_ctx_.reset();
 }
 
-auto FFMpegDecoder::Decode(const H264Image &encoded, Image &decoded) -> FFMpegDecoder::ErrorKind {
+auto FFMpegDecoder::Decode(const ByteVector &encoded, Image &decoded) -> FFMpegDecoder::ErrorKind {
     assert(parser_ != nullptr && "Codec parser is not initialized");
     assert(codec_ctx_ != nullptr && "Codec ctx is not initialized");
 
@@ -128,4 +128,4 @@ void FFMpegDecoder::UpdateInputSize() {
     av_image_alloc(buffer_, buffer_ls_, decode_width_, decode_height_, AV_PIX_FMT_BGR24, 1);
 }
 
-}  // namespace st
+}  // namespace oryx

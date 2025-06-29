@@ -9,7 +9,7 @@ extern "C" {
 #include <libavcodec/bsf.h>
 }
 
-namespace st {
+namespace oryx {
 
 struct AvPacketDeleter {
     void operator()(AVPacket* ptr) const { av_packet_free(&ptr); }
@@ -54,4 +54,4 @@ inline auto MakeAvBSFContextPtr(const AVBitStreamFilter* filter) {
     return AvBSFContextPtr(ctx);
 }
 
-}  // namespace st
+}  // namespace oryx

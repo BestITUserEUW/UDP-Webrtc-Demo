@@ -5,11 +5,12 @@
 
 #include <opencv2/core/mat.hpp>
 
-#include "expected.hpp"
+#include <oryx/expected.hpp>
+
 #include "image.hpp"
 #include "ffmpeg_helpers.hpp"
 
-namespace st {
+namespace oryx {
 
 class FFMpegDecoder {
 public:
@@ -20,9 +21,9 @@ public:
     FFMpegDecoder() = default;
     ~FFMpegDecoder();
 
-    auto Init() -> void_expected;
+    auto Init() -> void_expected<Error>;
     void DeInit();
-    auto Decode(const H264Image &encoded, Image &decoded) -> ErrorKind;
+    auto Decode(const ByteVector &encoded, Image &decoded) -> ErrorKind;
 
 private:
     void UpdateInputSize();
@@ -38,4 +39,4 @@ private:
     int buffer_ls_[4]{};
 };
 
-}  // namespace st
+}  // namespace oryx

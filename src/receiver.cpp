@@ -8,37 +8,36 @@
 #include <rtc/rtc.hpp>
 #include <opencv2/core/utils/logger.hpp>
 #include <opencv2/opencv.hpp>
+#include <oryx/enchantum.hpp>
+#include <oryx/httplib.hpp>
+#include <oryx/spsc_queue.hpp>
+#include <oryx/function_tracer.hpp>
+#include <oryx/argparse.hpp>
+#include <oryx/chrono/stopwatch.hpp>
 
-#include "httplib.hpp"
 #include "ffmpeg_decoder.hpp"
-#include "enchantum.hpp"
-#include "spsc_queue.hpp"
-#include "track_entry_exit.hpp"
 #include "signal_handler.hpp"
-#include "argparse.hpp"
 
-using namespace st;
+using namespace oryx;
 using std::println;
-
-std::chrono::steady_clock::time_point last_call_;
 
 httplib::Server server;
 std::shared_ptr<rtc::PeerConnection> connection;
 std::shared_ptr<rtc::Track> track;
 std::jthread http_worker;
 std::jthread decode_worker;
-folly::ProducerConsumerQueue<H264Image> queue{32};
+folly::ProducerConsumerQueue<ByteVector> queue{32};
 std::condition_variable has_data_cv;
 bool is_display_enabled = false;
 std::string window_name{"Receiver"};
 
 void HttpWorker(std::stop_token) {
-    TrackEntryExit tee{};
+    ORYX_TRACE_FUNCTION();
     server.listen("0.0.0.0", 8080);
 }
 
 void DecodeWorker(std::stop_token stoken) {
-    TrackEntryExit tee{};
+    ORYX_TRACE_FUNCTION();
     std::stop_callback scb(stoken, [&cv = has_data_cv]() { cv.notify_all(); });
     FFMpegDecoder decoder{};
     Image image{};
@@ -74,25 +73,20 @@ void DecodeWorker(std::stop_token stoken) {
 }
 
 void OnFrame(rtc::binary binary, rtc::FrameInfo info) {
-    using namespace std::chrono;
-    using Clock = high_resolution_clock;
+    static chrono::Stopwatch sw;
 
-    static auto to_ms = [](auto start, auto end) { return duration_cast<milliseconds>(end - start).count(); };
-    static Clock::time_point last_call;
-
-    auto now = Clock::now();
     if (binary.empty()) {
         println("Empty frame received");
         return;
     }
 
     auto data = reinterpret_cast<uint8_t *>(binary.data());
-    if (queue.write(H264Image(data, data + binary.size()))) {
+    if (queue.write(ByteVector(data, data + binary.size()))) {
         has_data_cv.notify_all();
     }
 
-    println("Frame Latency: {}ms Size: {} Timestamp: {}", to_ms(last_call, now), binary.size(), info.timestamp);
-    last_call = now;
+    println("Frame Latency: {} Size: {} Timestamp: {}", sw.ElapsedMs(), binary.size(), info.timestamp);
+    sw.Reset();
 }
 
 void StartHttpServer() {

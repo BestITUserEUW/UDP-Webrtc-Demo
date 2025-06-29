@@ -4,9 +4,9 @@
 
 #include <opencv2/core/mat.hpp>
 
-namespace st {
+namespace oryx {
 
-using H264Image = std::vector<uint8_t>;
+using ByteVector = std::vector<uint8_t>;
 using Image = cv::Mat;
 
-}  // namespace st
+}  // namespace oryx

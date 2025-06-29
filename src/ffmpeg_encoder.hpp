@@ -6,11 +6,12 @@
 
 #include <opencv2/core/mat.hpp>
 
-#include "expected.hpp"
+#include <oryx/expected.hpp>
+
 #include "image.hpp"
 #include "ffmpeg_helpers.hpp"
 
-namespace st {
+namespace oryx {
 
 class FFMpegEncoder {
 public:
@@ -26,10 +27,10 @@ public:
     FFMpegEncoder() = default;
     ~FFMpegEncoder();
 
-    auto Init(Config config) -> void_expected;
+    auto Init(Config config) -> void_expected<Error>;
     void DeInit();
 
-    auto Encode(const Image& decoded, H264Image& encoded) -> ErrorKind;
+    auto Encode(const Image& decoded, ByteVector& encoded) -> ErrorKind;
 
 private:
     AvCodecContextPtr codec_ctx_{};
@@ -38,4 +39,4 @@ private:
     AvPacketPtr encoded_pkt_{};
 };
 
-}  // namespace st
+}  // namespace oryx

@@ -28,13 +28,13 @@ To build **UDP-Webrtc-Demo** in Debug mode, follow these steps
 ### Run Sender
 
 ```bash
-.\build\wrt_receiver
+.\build\wrtc_receiver
 ```
 
 ### Run Receiver
 
 ```bash
-.\build\wrt_sender --endpoint "localhost" --port 8080
+.\build\wrtc_sender --endpoint "localhost" --port 8080
 ```
 
 ## Third Party Packages
@@ -42,9 +42,8 @@ To build **UDP-Webrtc-Demo** in Debug mode, follow these steps
 | Library         | Repository URL                                                                 |
 |-----------------|---------------------------------------------------------------------------------|
 | LibDatachannel  | [https://github.com/paullouisageneau/libdatachannel](https://github.com/paullouisageneau/libdatachannel) |
-| enchantum       | [https://github.com/ZXShady/enchantum](https://github.com/Enchanted-Studios/enchantum) |
-| cpp-httplib     | [https://github.com/yhirose/cpp-httplib](https://github.com/yhirose/cpp-httplib) |
 | opencv          | [https://github.com/opencv/opencv](https://github.com/opencv/opencv)           |
 | ffmpeg          | [https://github.com/FFmpeg/FFmpeg](https://github.com/FFmpeg/FFmpeg)           |
-| openssl         | [https://github.com/openssl/openssl](https://github.com/openssl/openssl)
+| openssl         | [https://github.com/openssl/openssl](https://github.com/openssl/openssl)       |
+| oryx-crt-cpp    | [https://github.com/BestITUserEUW/oryx-crt-cpp](https://github.com/BestITUserEUW/oryx-crt-cpp)                            |
 ---

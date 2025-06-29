@@ -9,7 +9,7 @@
 
 using std::println;
 
-namespace st {
+namespace oryx {
 
 SignalHandler::SignalHandler(pid_t tid)
     : tid_(tid) {
@@ -50,7 +50,7 @@ void SignalHandler::RaiseTermination() const {
 
 int SignalHandler::received_sig() const { return received_sig_; }
 
-std::shared_ptr<SignalHandler> SignalHandler::Instance() {
+auto SignalHandler::Instance() -> std::shared_ptr<SignalHandler> {
     static std::shared_ptr<SignalHandler> handler;
     static std::once_flag flag;
 
@@ -61,4 +61,4 @@ std::shared_ptr<SignalHandler> SignalHandler::Instance() {
     return handler;
 }
 
-}  // namespace st
+}  // namespace oryx

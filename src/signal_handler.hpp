@@ -3,7 +3,7 @@
 #include <csignal>
 #include <memory>
 
-namespace st {
+namespace oryx {
 
 class SignalHandler {
 public:
@@ -19,4 +19,4 @@ private:
     pid_t tid_;
 };
 
-}  // namespace st
+}  // namespace oryx

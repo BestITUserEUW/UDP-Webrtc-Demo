@@ -11,11 +11,11 @@ extern "C" {
 #include <libavutil/opt.h>
 }
 
-namespace st {
+namespace oryx {
 
 FFMpegEncoder::~FFMpegEncoder() { DeInit(); }
 
-auto FFMpegEncoder::Init(Config config) -> void_expected {
+auto FFMpegEncoder::Init(Config config) -> void_expected<Error> {
     auto codec = avcodec_find_encoder_by_name("libx264");
     if (!codec) {
         return UnexpectedError("h264 codec not found");
@@ -63,7 +63,7 @@ auto FFMpegEncoder::Init(Config config) -> void_expected {
     if (!sws_ctx_) {
         return UnexpectedError("Failed to get sws context");
     }
-    return void_ok;
+    return kVoidExpected;
 }
 
 void FFMpegEncoder::DeInit() {
@@ -73,7 +73,7 @@ void FFMpegEncoder::DeInit() {
     frame_yuv_.reset();
 }
 
-auto FFMpegEncoder::Encode(const Image& decoded, H264Image& encoded) -> FFMpegEncoder::ErrorKind {
+auto FFMpegEncoder::Encode(const Image& decoded, ByteVector& encoded) -> FFMpegEncoder::ErrorKind {
     frame_yuv_->pts++;
 
     int ret = av_frame_make_writable(frame_yuv_.get());
@@ -100,11 +100,11 @@ auto FFMpegEncoder::Encode(const Image& decoded, H264Image& encoded) -> FFMpegEn
             return ErrorKind::kEncodeFailed;
         }
 
-        encoded = H264Image(encoded_pkt->data, encoded_pkt->data + encoded_pkt->size);
+        encoded = ByteVector(encoded_pkt->data, encoded_pkt->data + encoded_pkt->size);
         av_packet_unref(encoded_pkt);
         return ErrorKind::kOk;
     }
     return ErrorKind::kNoFrame;
 }
 
-}  // namespace st
+}  // namespace oryx
